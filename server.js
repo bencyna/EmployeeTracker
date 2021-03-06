@@ -1,18 +1,20 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
+const sequelize = require("./config/connection");
+const employee = require("./lib/employee");
+// const connection = mysql.createConnection(sequelize);
 
 const connection = mysql.createConnection({
   host: "localhost",
-
-  // Your port; if not 3306
   port: 3306,
-
-  // Your username
   user: "root",
+  password: "",
+  database: "workPlace_db",
+});
 
-  // Be sure to update with your own MySQL password!
-  password: "hello",
-  database: "",
+connection.connect((err) => {
+  if (err) throw err;
+  init();
 });
 
 function init() {
@@ -56,28 +58,60 @@ function init() {
         case "Add a new role within a department":
           roleAdd();
           break;
+
+        default:
+          console.log(`Invalid action: ${answer.action}`);
+          break;
       }
     });
 }
 
 function departmentView() {
-  console.table("hello");
+  const query = "SELECT ID, NAME FROM department";
+  connection.query(query, (err, res) => {
+    console.table(res);
+    init();
+  });
 }
 
 function rolesView() {
-  console.log("hello");
+  const query = "SELECT title, salary FROM role";
+  connection.query(query, (err, res) => {
+    console.table(res);
+    init();
+  });
 }
 function employeesView() {
-  console.log("hello");
+  const query = "SELECT * FROM allEmployees";
+  connection.query(query, (err, res) => {
+    console.table(res);
+    init();
+  });
 }
-function departmentAdd() {
-  console.log("hello");
-}
+const departmentAdd = () => {
+  inquirer
+    .prompt({
+      name: "department",
+      type: "input",
+      message: "What is the new department called?",
+    })
+    .then((answers) => {
+      console.log("('" + answers.department + "')");
+      const query = "insert into department (NAME) VALUES (?);";
+      connection.query(query, [answers.department], (err, res) => {
+        if (err) throw err;
+        console.log("something");
+      });
+    })
+    .then(() => {
+      departmentView();
+    });
+};
 function employeesAdd() {
-  console.log("hello");
+  init();
 }
 function roleAdd() {
-  console.log("hello");
+  init();
 }
 
-init();
+// init();
