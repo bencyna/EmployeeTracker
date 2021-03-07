@@ -47,12 +47,10 @@ function populateRoles() {
   connection.query(query, (err, res) => {
     roleId.splice(0, roleId.length);
     roles.splice(0, roles.length);
-    console.log(res);
     for (const j in res) {
       roles.push(res[j].title);
       roleId.push(res[j].ID);
     }
-    console.log("roleid (after push) =  " + roleId);
   });
 }
 
@@ -81,6 +79,9 @@ function init() {
         "Add a new Employee",
         "Add a new department",
         "Add a new role",
+        "Remove an employee",
+        "Remove a role",
+        "Remove a department",
         "exit",
       ],
     })
@@ -108,6 +109,18 @@ function init() {
 
         case "Add a new role":
           roleAdd();
+          break;
+
+        case "Remove an employee":
+          deleteEmployee();
+          break;
+
+        case "Remove a role":
+          deleteRole();
+          break;
+
+        case "Remove a department":
+          deleteDepartment();
           break;
 
         default:
@@ -202,9 +215,6 @@ function employeesAdd() {
           manId = employeeId[i];
         }
       }
-      console.log("emplpyeeId = " + employeeId);
-      console.log("roleId = " + roleId);
-
       const query =
         "insert into employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
       connection.query(
@@ -245,11 +255,8 @@ function roleAdd() {
       for (let i = 0; i < departmentId.length; i++) {
         if (answers.departmentAdd == departments[i]) {
           idNum = departmentId[i];
-          console.log(idNum);
         }
       }
-      console.log("DepartmentId = " + departmentId);
-
       const query =
         "insert into role (title, salary, department_id) VALUES (?, ?, ?);";
       connection.query(
@@ -263,5 +270,90 @@ function roleAdd() {
     .then(() => {
       populateRoles();
       rolesView();
+    });
+}
+
+function deleteEmployee() {
+  let deleteId = 0;
+  inquirer
+    .prompt([
+      {
+        name: "employee",
+        type: "list",
+        message: "Which employee do you want to remove?",
+        choices: employees,
+      },
+    ])
+    .then((answers) => {
+      for (let i = 0; i < employees.length; i++) {
+        if (answers.employee == employees[i]) {
+          deleteId = employeeId[i];
+        }
+        const query = "DELETE FROM employee WHERE id = ?;";
+        connection.query(query, [deleteId], (err, res) => {
+          if (err) throw err;
+        });
+      }
+    })
+    .then(() => {
+      populateEmployees();
+      employeesView();
+    });
+}
+
+function deleteRole() {
+  let deleteId = 0;
+  inquirer
+    .prompt([
+      {
+        name: "role",
+        type: "list",
+        message: "Which role do you want to remove?",
+        choices: roles,
+      },
+    ])
+    .then((answers) => {
+      for (let i = 0; i < roles.length; i++) {
+        if (answers.role == roles[i]) {
+          deleteId = roleId[i];
+        }
+        const query = "DELETE FROM role WHERE id = ?;";
+        connection.query(query, [deleteId], (err, res) => {
+          if (err) console.log("Cannot delete a role with current employee(s)");
+        });
+      }
+    })
+    .then(() => {
+      populateRoles();
+      rolesView();
+    });
+}
+
+function deleteDepartment() {
+  let deleteId = 0;
+  inquirer
+    .prompt([
+      {
+        name: "Department",
+        type: "list",
+        message: "Which Department do you want to remove?",
+        choices: departments,
+      },
+    ])
+    .then((answers) => {
+      for (let i = 0; i < departments.length; i++) {
+        if (answers.Department == departments[i]) {
+          deleteId = departmentId[i];
+        }
+        const query = "DELETE FROM department WHERE id = ?;";
+        connection.query(query, [deleteId], (err, res) => {
+          if (err)
+            console.log("Cannot delete a Department with (an) active role(s)");
+        });
+      }
+    })
+    .then(() => {
+      populateDepartments();
+      departmentView();
     });
 }
