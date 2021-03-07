@@ -47,10 +47,12 @@ function populateRoles() {
   connection.query(query, (err, res) => {
     roleId.splice(0, roleId.length);
     roles.splice(0, roles.length);
+    console.log(res);
     for (const j in res) {
       roles.push(res[j].title);
       roleId.push(res[j].ID);
     }
+    console.log("roleid (after push) =  " + roleId);
   });
 }
 
@@ -73,9 +75,9 @@ function init() {
       type: "list",
       message: "Choose something to do",
       choices: [
+        "View all employees",
         "View departments",
         "View roles",
-        "View employees",
         "Add a new Employee",
         "Add a new department",
         "Add a new role",
@@ -92,7 +94,7 @@ function init() {
           rolesView();
           break;
 
-        case "View employees":
+        case "View all employees":
           employeesView();
           break;
 
@@ -134,11 +136,11 @@ function rolesView() {
 }
 function employeesView() {
   let query =
-    "SELECT employee.ID, employee.first_name, employee.last_name, role.title, role.salary, department.department,employee.manager_id ";
-  query += "from employee ";
-  query += "inner join role on role.ID = employee.role_id ";
+    "SELECT b.ID, b.first_name, b.last_name, role.title, role.salary, department.department, CONCAT(e.first_name, ' ', e.last_name) as Manager ";
+  query += "from employee b ";
+  query += "left join employee e on e.id = b.manager_id ";
+  query += "inner join role on role.ID = b.role_id ";
   query += "left join department on role.department_id = department.ID;";
-  console.log(query);
   connection.query(query, (err, res) => {
     console.table(res);
     init();
@@ -191,16 +193,23 @@ function employeesAdd() {
       },
     ])
     .then((answers) => {
+      let manId = 0;
       for (let i = 0; i < roleId.length; i++) {
         if (answers.role == roles[i]) {
-          idNum = i + 1;
+          idNum = roleId[i];
+        }
+        if (answers.manager == employees[i]) {
+          manId = employeeId[i];
         }
       }
+      console.log("emplpyeeId = " + employeeId);
+      console.log("roleId = " + roleId);
+
       const query =
-        "insert into employee (first_name, last_name, role_id) VALUES (?, ?, ?)";
+        "insert into employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
       connection.query(
         query,
-        [answers.firstName, answers.lastName, idNum],
+        [answers.firstName, answers.lastName, idNum, manId],
         (err, res) => {
           if (err) throw err;
         }
@@ -235,9 +244,11 @@ function roleAdd() {
       // add validation here for number in salary
       for (let i = 0; i < departmentId.length; i++) {
         if (answers.departmentAdd == departments[i]) {
-          idNum = i + 1;
+          idNum = departmentId[i];
+          console.log(idNum);
         }
       }
+      console.log("DepartmentId = " + departmentId);
 
       const query =
         "insert into role (title, salary, department_id) VALUES (?, ?, ?);";

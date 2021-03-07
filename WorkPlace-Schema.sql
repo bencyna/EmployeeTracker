@@ -11,7 +11,7 @@ department VARCHAR(30)
 CREATE TABLE role(
 ID INTEGER PRIMARY KEY AUTO_INCREMENT,
 title VARCHAR(30),
-salary VARCHAR(30),
+salary Integer,
 department_id INTEGER, 
 FOREIGN key (department_id) REFERENCES department(ID)
 );
@@ -19,7 +19,7 @@ FOREIGN key (department_id) REFERENCES department(ID)
 CREATE TABLE employee(
 ID INTEGER PRIMARY KEY AUTO_INCREMENT,
 first_name VARCHAR(30),
-last_department VARCHAR(30),
+last_name VARCHAR(30),
 role_id INTEGER,
 manager_id INTEGER, 
 FOREIGN key (role_id) REFERENCES role(department_id),
@@ -50,11 +50,6 @@ SELECT * FROM employeeBase;
 
 DROP table IF EXISTS allEmployees;
 
-CREATE table allEmployees AS
-select employeeBase.id, employeeBase.first_name, employeeBase.last_name, employeeBase.title, department.department, employeeBase.salary, employeeBase.manager_id
-from employeeBase, department
-where employeeBase.department_id = department.ID;
-
 create table rolesDepartment AS
 Select role.title, role.salary, department.department
 FROM role, department
@@ -75,11 +70,27 @@ select * from department;
 
 insert into department (department) VALUES ('tus');
 
-select employee.id, employee.first_name, employee.last_name, role.title, department.department, role.salary, employee.manager_id
+insert into role (title, salary, department_id) 
+VALUES ("Footballer", 500000, 1);
+
+
+SELECT employee.ID, employee.first_name, employee.last_name, role.title, role.salary, department.department,employee.manager_id
 from employee
-inner join on employee.role_id = role.ID
-left join on role.department_id = department.department.ID
+inner join role on role.ID = employee.role_id
+left join department on role.department_id = department.ID;
+
+select first_name + ' ' + last_name as Name from employee;
+
+select CONCAT(first_name, " ", last_name) as Name 
+from employee;
 
 
-
-
+  SELECT b.id, b.first_name, b.last_name, b.manager_id as managerid, CONCAT(e.first_name, " ", e.last_name) as Manager
+    from employee b
+    left join employee e on e.id = b.manager_id;
+    
+    SELECT b.ID, b.first_name, b.last_name, role.title, role.salary, department.department, CONCAT(e.first_name, " ", e.last_name) as Manager
+from employee b
+left join employee e on e.id = b.manager_id
+inner join role on role.ID = b.role_id
+left join department on role.department_id = department.ID;
