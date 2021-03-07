@@ -14,8 +14,57 @@ const connection = mysql.createConnection({
 
 connection.connect((err) => {
   if (err) throw err;
+  populateDepartments();
+  populateRoles();
+  populateEmployees();
   init();
 });
+
+const departments = [];
+const departmentId = [];
+const roles = [];
+const roleId = [];
+const employees = [];
+const employeeId = [];
+// get this good and youre done bruv
+
+let idNum = 0;
+
+function populateDepartments() {
+  const query = "SELECT ID, department FROM department";
+  connection.query(query, (err, res) => {
+    departmentId.splice(0, departmentId.length);
+    departments.splice(0, departments.length);
+    for (const key in res) {
+      departments.push(res[key].department);
+      departmentId.push(res[key].ID);
+    }
+  });
+}
+
+function populateRoles() {
+  const query = "SELECT ID, title FROM role";
+  connection.query(query, (err, res) => {
+    roleId.splice(0, roleId.length);
+    roles.splice(0, roles.length);
+    for (const j in res) {
+      roles.push(res[j].title);
+      roleId.push(res[j].ID);
+    }
+  });
+}
+
+function populateEmployees() {
+  const query = "SELECT ID, first_name, last_name FROM employee";
+  connection.query(query, (err, res) => {
+    employees.splice(0, employees.length);
+    employeeId.splice(0, employeeId.length);
+    for (const k in res) {
+      employees.push(res[k].first_name + " " + res[k].last_name);
+      employeeId.push(res[k].ID);
+    }
+  });
+}
 
 function init() {
   inquirer
@@ -24,18 +73,18 @@ function init() {
       type: "list",
       message: "Choose something to do",
       choices: [
-        "View department",
+        "View departments",
         "View roles",
         "View employees",
         "Add a new Employee",
         "Add a new department",
-        "Add a new role within a department",
+        "Add a new role",
         "exit",
       ],
     })
     .then((answer) => {
       switch (answer.action) {
-        case "View department":
+        case "View departments":
           departmentView();
           break;
 
@@ -55,7 +104,7 @@ function init() {
           departmentAdd();
           break;
 
-        case "Add a new role within a department":
+        case "Add a new role":
           roleAdd();
           break;
 
@@ -67,7 +116,7 @@ function init() {
 }
 
 function departmentView() {
-  const query = "SELECT ID, NAME FROM department";
+  const query = "SELECT ID, department FROM department";
   connection.query(query, (err, res) => {
     console.table(res);
     init();
@@ -75,14 +124,21 @@ function departmentView() {
 }
 
 function rolesView() {
-  const query = "SELECT title, salary FROM role";
+  const query =
+    "select role.title, role.salary, department.department from role inner join department on role.department_id = department.ID";
   connection.query(query, (err, res) => {
     console.table(res);
+    populateDepartments();
     init();
   });
 }
 function employeesView() {
-  const query = "SELECT * FROM allEmployees";
+  let query =
+    "SELECT employee.ID, employee.first_name, employee.last_name, role.title, role.salary, department.department,employee.manager_id ";
+  query += "from employee ";
+  query += "inner join role on role.ID = employee.role_id ";
+  query += "left join department on role.department_id = department.ID;";
+  console.log(query);
   connection.query(query, (err, res) => {
     console.table(res);
     init();
@@ -96,22 +152,105 @@ const departmentAdd = () => {
       message: "What is the new department called?",
     })
     .then((answers) => {
-      console.log("('" + answers.department + "')");
-      const query = "insert into department (NAME) VALUES (?);";
+      const query = "insert into department (department) VALUES (?);";
       connection.query(query, [answers.department], (err, res) => {
         if (err) throw err;
         console.log("something");
       });
     })
     .then(() => {
+      populateDepartments();
       departmentView();
     });
 };
 function employeesAdd() {
-  init();
+  employees.push("No Manager");
+  inquirer
+    .prompt([
+      {
+        name: "role",
+        type: "list",
+        message: "What role would you like this employee to have?",
+        choices: roles,
+      },
+      {
+        name: "firstName",
+        type: "Input",
+        message: "What is the employees first name?",
+      },
+      {
+        name: "lastName",
+        type: "Input",
+        message: "What is the employees last name?",
+      },
+      {
+        name: "manager",
+        type: "list",
+        message: "Who is the manager of this employee?",
+        choices: employees,
+      },
+    ])
+    .then((answers) => {
+      for (let i = 0; i < roleId.length; i++) {
+        if (answers.role == roles[i]) {
+          idNum = i + 1;
+        }
+      }
+      const query =
+        "insert into employee (first_name, last_name, role_id) VALUES (?, ?, ?)";
+      connection.query(
+        query,
+        [answers.firstName, answers.lastName, idNum],
+        (err, res) => {
+          if (err) throw err;
+        }
+      );
+    })
+    .then(() => {
+      populateEmployees();
+      employeesView();
+    });
 }
 function roleAdd() {
-  init();
-}
+  inquirer
+    .prompt([
+      {
+        name: "departmentAdd",
+        type: "list",
+        message: "Which department does this role belong to?",
+        choices: departments,
+      },
+      {
+        name: "name",
+        type: "input",
+        message: "What is the new role called?",
+      },
+      {
+        name: "salary",
+        type: "input",
+        message: "What is the salary of this role?",
+      },
+    ])
+    .then((answers) => {
+      // add validation here for number in salary
+      for (let i = 0; i < departmentId.length; i++) {
+        if (answers.departmentAdd == departments[i]) {
+          idNum = i + 1;
+        }
+      }
 
-// init();
+      const query =
+        "insert into role (title, salary, department_id) VALUES (?, ?, ?);";
+      connection.query(
+        query,
+        [answers.name, answers.salary, idNum],
+        (err, res) => {
+          if (err) throw err;
+        }
+      );
+    })
+    .then(() => {
+      populateRoles();
+      rolesView();
+    });
+}

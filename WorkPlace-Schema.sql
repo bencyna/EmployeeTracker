@@ -5,7 +5,7 @@ USE workPlace_db;
 
 CREATE TABLE department(
 ID INTEGER PRIMARY KEY AUTO_INCREMENT,
-NAME VARCHAR(30)
+department VARCHAR(30)
 );
 
 CREATE TABLE role(
@@ -19,7 +19,7 @@ FOREIGN key (department_id) REFERENCES department(ID)
 CREATE TABLE employee(
 ID INTEGER PRIMARY KEY AUTO_INCREMENT,
 first_name VARCHAR(30),
-last_name VARCHAR(30),
+last_department VARCHAR(30),
 role_id INTEGER,
 manager_id INTEGER, 
 FOREIGN key (role_id) REFERENCES role(department_id),
@@ -30,7 +30,7 @@ SELECT * FROM department;
 SELECT * FROM role;
 SELECT * FROM employee;
 
-INSERT INTO department (NAME) 
+INSERT INTO department (department) 
 VALUES ("Sports"), ("Developer"), ("Psychologists");
 
 INSERT INTO role (title, salary, department_id)
@@ -51,9 +51,16 @@ SELECT * FROM employeeBase;
 DROP table IF EXISTS allEmployees;
 
 CREATE table allEmployees AS
-select employeeBase.id, employeeBase.first_name, employeeBase.last_name, employeeBase.title, department.name, employeeBase.salary, employeeBase.manager_id
+select employeeBase.id, employeeBase.first_name, employeeBase.last_name, employeeBase.title, department.department, employeeBase.salary, employeeBase.manager_id
 from employeeBase, department
 where employeeBase.department_id = department.ID;
+
+create table rolesDepartment AS
+Select role.title, role.salary, department.department
+FROM role, department
+where role.department_id = department.ID; 
+
+Select * from rolesDepartment;
 
 SELECT * FROM allEmployees;
 
@@ -61,12 +68,18 @@ SELECT * FROM allEmployees WHERE first_name = "Ben";
 
 SELECT title, salary FROM role;
 
-INSERT INTO department (NAME) 
+INSERT INTO department (department) 
 VALUES ("hello");
 
 select * from department;
 
-insert into department (NAME) VALUES ('tus');
+insert into department (department) VALUES ('tus');
+
+select employee.id, employee.first_name, employee.last_name, role.title, department.department, role.salary, employee.manager_id
+from employee
+inner join on employee.role_id = role.ID
+left join on role.department_id = department.department.ID
+
 
 
 
