@@ -82,6 +82,8 @@ function init() {
         "Remove a role",
         "Remove a department",
         "See total wages",
+        "Veiw Employees by manager",
+        "Update employee role",
         "exit",
       ],
     })
@@ -125,6 +127,14 @@ function init() {
 
         case "See total wages":
           totalWages();
+          break;
+
+        case "Veiw Employees by manager":
+          managersVeiw();
+          break;
+
+        case "Update employee role":
+          updateRole();
           break;
 
         default:
@@ -370,4 +380,71 @@ function totalWages() {
     console.table(res);
     init();
   });
+}
+
+function managersVeiw() {
+  inquirer
+    .prompt({
+      name: "manager",
+      type: "list",
+      message: "Which manager's employee's do you want to see?",
+      choices: employees,
+    })
+    .then((answers) => {
+      for (let i = 0; i < employees.length; i++) {
+        if (answers.manager == employees[i]) {
+          idNum = employeeId[i];
+        }
+      }
+      let query =
+        "SELECT b.ID, b.first_name, b.last_name, role.title, role.salary, department.department, CONCAT(e.first_name, ' ', e.last_name) as Manager ";
+      query += "from employee b ";
+      query += "left join employee e on e.id = b.manager_id ";
+      query += "inner join role on role.ID = b.role_id ";
+      query += "left join department on role.department_id = department.ID ";
+      query += "where b.manager_id = ?;";
+      connection.query(query, [idNum], (err, res) => {
+        if (err) throw err;
+        console.table(res);
+      });
+    })
+    .then(() => {
+      init();
+    });
+}
+
+function updateRole() {
+  let newRole = 0;
+  inquirer
+    .prompt([
+      {
+        name: "employee",
+        type: "list",
+        message: "Which employee do you want to update?",
+        choices: employees,
+      },
+      {
+        name: "role",
+        type: "list",
+        message: "What is the new role for this employee",
+        choices: roles,
+      },
+    ])
+    .then((answers) => {
+      for (let i = 0; i < employees.length; i++) {
+        if (answers.employee == employees[i]) {
+          idNum = employeeId[i];
+        }
+        if (answers.role == roles[i]) {
+          newRole = roleId[i];
+        }
+      }
+      const query = "update employee set role_id = ? where id = ?";
+      connection.query(query, [newRole, idNum], (err, res) => {
+        if (err) throw err;
+      });
+    })
+    .then(() => {
+      employeesView();
+    });
 }
