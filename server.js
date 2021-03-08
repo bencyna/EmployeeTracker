@@ -1,25 +1,31 @@
+// npm packages
 const inquirer = require("inquirer");
 const mysql = require("mysql");
-const sequelize = require("./config/connection");
+// const sequelize = require("./config/connection");
 const employee = require("./lib/employee");
 // const connection = mysql.createConnection(sequelize);
 
+// connection to mysql
+// future development to make it a seperate file
 const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: "root",
-  password: "",
+  password: "hello",
   database: "workPlace_db",
 });
 
+// begin connection
 connection.connect((err) => {
   if (err) throw err;
   populateDepartments();
   populateRoles();
   populateEmployees();
+  // prompts user
   init();
 });
 
+// holds sql data
 const departments = [];
 const departmentId = [];
 const roles = [];
@@ -29,6 +35,7 @@ const employeeId = [];
 
 let idNum = 0;
 
+// Populates the departments and departmentId arrays
 function populateDepartments() {
   const query = "SELECT ID, department FROM department";
   connection.query(query, (err, res) => {
@@ -41,6 +48,7 @@ function populateDepartments() {
   });
 }
 
+// populates the roles and rolesId arrays
 function populateRoles() {
   const query = "SELECT ID, title FROM role";
   connection.query(query, (err, res) => {
@@ -53,6 +61,7 @@ function populateRoles() {
   });
 }
 
+// Populates the employees and employeeId array
 function populateEmployees() {
   const query = "SELECT ID, first_name, last_name FROM employee";
   connection.query(query, (err, res) => {
@@ -65,6 +74,7 @@ function populateEmployees() {
   });
 }
 
+// Intitialisation, user chooses what to do
 function init() {
   inquirer
     .prompt({
@@ -153,6 +163,7 @@ function init() {
     });
 }
 
+// Logs the department table
 function departmentView() {
   const query = "SELECT ID, department FROM department";
   connection.query(query, (err, res) => {
@@ -161,6 +172,7 @@ function departmentView() {
   });
 }
 
+// logs the roles table
 function rolesView() {
   const query =
     "select role.title, role.salary, department.department from role inner join department on role.department_id = department.ID";
@@ -170,6 +182,8 @@ function rolesView() {
     init();
   });
 }
+
+// shows all employees
 function employeesView() {
   let query =
     "SELECT b.ID, b.first_name, b.last_name, role.title, role.salary, department.department, CONCAT(e.first_name, ' ', e.last_name) as Manager ";
@@ -201,6 +215,8 @@ const departmentAdd = () => {
       departmentView();
     });
 };
+
+// adds an employee within a role and gets their manager too
 function employeesAdd() {
   employees.push("No Manager");
   inquirer
@@ -253,6 +269,8 @@ function employeesAdd() {
       employeesView();
     });
 }
+
+// adds role to department
 function roleAdd() {
   inquirer
     .prompt([
