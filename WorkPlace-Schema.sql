@@ -22,8 +22,7 @@ first_name VARCHAR(30),
 last_name VARCHAR(30),
 role_id INTEGER,
 manager_id INTEGER, 
-FOREIGN key (role_id) REFERENCES role(department_id),
-FOREIGN key (manager_id) REFERENCES role(department_id)
+FOREIGN key (role_id) REFERENCES role(id)
 );
 
 SELECT * FROM department;
@@ -57,7 +56,7 @@ where role.department_id = department.ID;
 
 Select * from rolesDepartment;
 
-SELECT * FROM allEmployees;
+SELECT * FROM employee;
 
 SELECT * FROM allEmployees WHERE first_name = "Ben";
 
@@ -79,13 +78,14 @@ from employee
 inner join role on role.ID = employee.role_id
 left join department on role.department_id = department.ID;
 
+
 select first_name + ' ' + last_name as Name from employee;
 
-select CONCAT(first_name, " ", last_name) as Name 
-from employee;
+insert into employee (first_name, last_name, role_id, manager_id)
+values ("Jasmin", "Poppy", 2, 2), ("Maximoff", "Witch", 1, 2);
 
-
-  SELECT b.id, b.first_name, b.last_name, b.manager_id as managerid, CONCAT(e.first_name, " ", e.last_name) as Manager
+    
+    SELECT b.id, b.first_name, b.last_name, b.manager_id as managerid, CONCAT(e.first_name, " ", e.last_name) as Manager
     from employee b
     left join employee e on e.id = b.manager_id;
     
@@ -94,3 +94,14 @@ from employee b
 left join employee e on e.id = b.manager_id
 inner join role on role.ID = b.role_id
 left join department on role.department_id = department.ID;
+
+insert into employee (first_name, last_name, role_id) VALUES ('Brianna', 'Pullan', 2);
+
+select * from department;
+
+select * from employee;
+
+DELETE FROM department WHERE id = 3;
+
+
+insert into employee (first_name, last_name, role_id, manager_id) VALUES ('Jeff', 'Bezos', 4, 2)

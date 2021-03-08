@@ -26,7 +26,6 @@ const roles = [];
 const roleId = [];
 const employees = [];
 const employeeId = [];
-// get this good and youre done bruv
 
 let idNum = 0;
 
@@ -82,6 +81,7 @@ function init() {
         "Remove an employee",
         "Remove a role",
         "Remove a department",
+        "See total wages",
         "exit",
       ],
     })
@@ -123,8 +123,13 @@ function init() {
           deleteDepartment();
           break;
 
+        case "See total wages":
+          totalWages();
+          break;
+
         default:
           console.log(`Invalid action: ${answer.action}`);
+          process.exit();
           break;
       }
     });
@@ -356,4 +361,13 @@ function deleteDepartment() {
       populateDepartments();
       departmentView();
     });
+}
+
+function totalWages() {
+  const query =
+    "SELECT SUM(salary) AS 'Total Wages' from employee inner join role on role.id = employee.role_id;";
+  connection.query(query, (err, res) => {
+    console.table(res);
+    init();
+  });
 }
