@@ -84,6 +84,7 @@ function init() {
         "See total wages",
         "Veiw Employees by manager",
         "Update employee role",
+        "Update employee's manager",
         "exit",
       ],
     })
@@ -137,9 +138,16 @@ function init() {
           updateRole();
           break;
 
+        case "Update employee's manager":
+          updateManager();
+          break;
+
+        case "Exit":
+          console.log("goodbye");
+          process.exit();
+
         default:
           console.log(`Invalid action: ${answer.action}`);
-          process.exit();
           break;
       }
     });
@@ -266,6 +274,10 @@ function roleAdd() {
       },
     ])
     .then((answers) => {
+      if (isNaN(answers.salary)) {
+        console.log("Salary must contain numbers only");
+        process.exit();
+      }
       // add validation here for number in salary
       for (let i = 0; i < departmentId.length; i++) {
         if (answers.departmentAdd == departments[i]) {
@@ -441,6 +453,42 @@ function updateRole() {
       }
       const query = "update employee set role_id = ? where id = ?";
       connection.query(query, [newRole, idNum], (err, res) => {
+        if (err) throw err;
+      });
+    })
+    .then(() => {
+      employeesView();
+    });
+}
+
+function updateManager() {
+  let newManager = 0;
+  inquirer
+    .prompt([
+      {
+        name: "employee",
+        type: "list",
+        message: "Which employee do you want to update?",
+        choices: employees,
+      },
+      {
+        name: "manager",
+        type: "list",
+        message: "Who is the new manager for this employee",
+        choices: employees,
+      },
+    ])
+    .then((answers) => {
+      for (let i = 0; i < employees.length; i++) {
+        if (answers.employee == employees[i]) {
+          idNum = employeeId[i];
+        }
+        if (answers.manager == employees[i]) {
+          newManager = employeeId[i];
+        }
+      }
+      const query = "update employee set manager_id = ? where id = ?";
+      connection.query(query, [newManager, idNum], (err, res) => {
         if (err) throw err;
       });
     })
