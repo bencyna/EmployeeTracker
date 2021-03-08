@@ -8,7 +8,7 @@ const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: "root",
-  password: "",
+  password: "hello",
   database: "workPlace_db",
 });
 
@@ -142,7 +142,7 @@ function init() {
           updateManager();
           break;
 
-        case "Exit":
+        case "exit":
           console.log("goodbye");
           process.exit();
 
@@ -418,10 +418,8 @@ function managersVeiw() {
       connection.query(query, [idNum], (err, res) => {
         if (err) throw err;
         console.table(res);
+        init();
       });
-    })
-    .then(() => {
-      init();
     });
 }
 
