@@ -8,7 +8,7 @@ const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: "root",
-  password: "hello",
+  password: "",
   database: "workPlace_db",
 });
 
@@ -278,7 +278,6 @@ function roleAdd() {
         console.log("Salary must contain numbers only");
         process.exit();
       }
-      // add validation here for number in salary
       for (let i = 0; i < departmentId.length; i++) {
         if (answers.departmentAdd == departments[i]) {
           idNum = departmentId[i];
